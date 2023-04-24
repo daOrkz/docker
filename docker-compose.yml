@@ -1,0 +1,85 @@
+version: '3.0'
+
+# Services
+services:
+
+  # Nginx Service
+  nginx:
+    image: nginx:1.21
+    container_name: nginx
+    ports:
+      - 81:80
+    volumes:
+      - ./src/app:/var/www/php
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - php
+    networks:
+      - app-network
+
+  # PHP Service
+  php:
+    #image: php:8.1-fpm
+    build: ./docker/php
+    container_name: php
+    working_dir: /var/www/php
+    volumes:
+      - ./src/app:/var/www/php
+      - ./docker/php/php.ini:/usr/local/etc/php/php.ini
+      #- ./docker/php/php.ini:$PHP_INI_DIR/php.ini
+    depends_on:
+        mysql:
+            condition: service_healthy
+    networks:
+      - app-network
+
+  # MySQL Service
+  mysql:
+    image: mariadb:10.7.8
+    container_name: mysql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: test_db
+    volumes:
+        - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+        - mysqldata:/var/lib/mysql
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u root --password=$$MYSQL_ROOT_PASSWORD
+      interval: 5s
+      retries: 10
+    networks:
+      - app-network
+
+# PhpMyAdmin Service
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: pma
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: root
+#      PMA_PORT: 3307
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: sh -c "echo 'ruuuun....'"    
+    networks:
+      - app-network
+
+# Volumes
+volumes:
+  mysqldata: 
+    name: "mysqldata_data"
+
+
+networks:
+  app-network:
+    driver: bridge
+
+
+
