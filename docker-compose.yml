@@ -10,7 +10,7 @@ services:
     ports:
       - 81:80
     volumes:
-      - ./src/app:/var/www/php
+      - ./src:/var/www
       - ./docker/nginx/conf.d:/etc/nginx/conf.d
     depends_on:
       - php
@@ -22,9 +22,9 @@ services:
     #image: php:8.1-fpm
     build: ./docker/php
     container_name: php
-    working_dir: /var/www/php
+    working_dir: /var/www
     volumes:
-      - ./src/app:/var/www/php
+      - ./src:/var/www
       - ./docker/php/php.ini:/usr/local/etc/php/php.ini
       #- ./docker/php/php.ini:$PHP_INI_DIR/php.ini
     depends_on:
