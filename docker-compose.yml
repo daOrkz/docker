@@ -66,8 +66,7 @@ services:
 #      PMA_PORT: 3307
     depends_on:
       mysql:
-        condition: service_healthy
-    command: sh -c "echo 'ruuuun....'"    
+        condition: service_healthy    
     networks:
       - app-network
 
